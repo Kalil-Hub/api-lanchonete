@@ -7,23 +7,11 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-if (process.env.NODE_ENV !== "test") {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("Conectado ao MongoDB"))
-    .catch((err) => console.error("Erro ao conectar no MongoDB:", err));
-}
+const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/${process.env.MONGO_DB}?retryWrites=true&w=majority`;
 
-app.get("/", (req, res) => {
-  res.send("API da Lanchonete funcionando!");
-});
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("Conectado ao MongoDB"))
+  .catch((err) => console.error("Erro ao conectar:", err));
 
-const PORT = process.env.PORT || 3000;
-
-if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-  });
-}
-
-export default app;
+app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
