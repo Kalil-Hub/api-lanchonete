@@ -1,17 +1,24 @@
-import express from "express";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-const app = express();
-app.use(express.json());
+import app from "./app.js";
+import mongoose from "mongoose";
 
-const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/${process.env.MONGO_DB}?retryWrites=true&w=majority`;
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI;
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("Conectado ao MongoDB"))
-  .catch((err) => console.error("Erro ao conectar:", err));
+async function startServer() {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("Conectado ao MongoDB");
+    
+    app.listen(PORT, () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
 
-app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+  } catch (error) {
+    console.error("Erro ao conectar ao MongoDB:", error);
+  }
+}
+
+startServer();
