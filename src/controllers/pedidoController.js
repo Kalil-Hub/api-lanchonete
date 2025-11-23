@@ -19,7 +19,6 @@ export const criarPedido = async (req, res) => {
       if (!produto) {
         return res.status(404).json({ error: `Produto não encontrado: ${item.produtoId}` });
       }
-
       total += produto.preco * item.quantidade;
     }
 
@@ -30,13 +29,10 @@ export const criarPedido = async (req, res) => {
     });
 
     res.status(201).json(pedido);
-
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Erro ao criar pedido" });
+    return res.status(500).json({ error: "Erro ao criar pedido" });
   }
 };
-
 
 export const listarPedidos = async (req, res) => {
   try {
@@ -49,7 +45,6 @@ export const listarPedidos = async (req, res) => {
     res.status(500).json({ error: "Erro ao listar pedidos" });
   }
 };
-
 
 export const listarPedidosCliente = async (req, res) => {
   try {
@@ -77,7 +72,6 @@ export const atualizarPedido = async (req, res) => {
     res.status(500).json({ error: "Erro ao atualizar pedido" });
   }
 };
-
 
 export const deletarPedido = async (req, res) => {
   try {
