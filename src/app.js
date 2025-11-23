@@ -10,11 +10,14 @@ import pedidoRoutes from "./routes/pedidoRoutes.js";
 const app = express();
 
 app.use(express.json());
-app.use("/api/auth/cliente", clienteAuthRoutes);
-app.use("/api/auth/admin", adminAuthRoutes);
 
-app.use("/api/produtos", produtoRoutes);
-app.use("/api/clientes", clienteRoutes);
-app.use("/api/pedidos", pedidoRoutes);
+// AUTH
+app.use("/api/v1/auth/cliente", clienteAuthRoutes);
+app.use("/api/v1/auth/admin", adminAuthRoutes);
+
+// ENTIDADES
+app.use("/api/v1/produtos", produtoRoutes);
+app.use("/api/v1/clientes", clienteRoutes);
+app.use("/api/v1/pedidos", pedidoRoutes);
 
 export default app;
