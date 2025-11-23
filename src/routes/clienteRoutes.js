@@ -1,8 +1,16 @@
 import { Router } from "express";
+import {
+  criarCliente,
+  listarClientes,
+  atualizarCliente,
+  deletarCliente
+} from "../controllers/clienteController.js";
+
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ message: "Rota de clientes funcionando" });
-});
+router.post("/", criarCliente);
+router.get("/", listarClientes);
+router.put("/:id", atualizarCliente);
+router.delete("/:id", deletarCliente);
 
 export default router;

@@ -19,5 +19,11 @@ router.get("/:id", authAdmin, buscarPedido);
 router.post("/", authCliente, validarCriarPedido, validarCampos, criarPedido);
 router.put("/:id", authAdmin, atualizarPedido);
 router.delete("/:id", authAdmin, deletarPedido);
+const router = Router();
+
+router.post("/", criarPedido);
+router.get("/", listarPedidos);
+router.put("/:id", atualizarPedido);
+router.delete("/:id", deletarPedido);
 
 export default router;

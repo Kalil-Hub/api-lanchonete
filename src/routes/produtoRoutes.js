@@ -23,5 +23,12 @@ router.get("/:id", buscarProdutoValidator, validar, buscarProduto);
 router.post("/", authAdmin, criarProdutoValidator, validar, criarProduto);
 router.put("/:id", authAdmin, atualizarProdutoValidator, validar, atualizarProduto);
 router.delete("/:id", authAdmin, deletarProdutoValidator, validar, deletarProduto);
+const router = express.Router();
+router.get("/", listarProdutos);
+router.get("/:id", buscarProduto);
+router.post("/", criarProduto);
+router.put("/:id", atualizarProduto);
+router.delete("/:id", deletarProduto);
+
 
 export default router;

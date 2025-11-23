@@ -18,4 +18,11 @@ clienteSchema.methods.compararSenha = function (senhaDigitada) {
   return bcrypt.compare(senhaDigitada, this.senha);
 };
 
+
+const clienteSchema = new mongoose.Schema({
+  nome: { type: String, required: true },
+  telefone: { type: String, required: true },
+  email: { type: String },
+}, { timestamps: true });
+
 export default mongoose.model("Cliente", clienteSchema);
