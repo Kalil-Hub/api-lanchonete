@@ -1,69 +1,63 @@
 import request from "supertest";
-import mongoose from "mongoose";
 import app from "../src/app.js";
-import jwt from "jsonwebtoken";
 import Produto from "../src/models/produtoModel.js";
-import dotenv from "dotenv";
-
-dotenv.config({ path: ".env.test" });
-
-let token;
+import {
+  conectarDBTeste,
+  limparBanco,
+  fecharConexao
+} from "./config/db.js";
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGO_URI_TEST);
+  await conectarDBTeste();
+});
 
-  // Cria um token válido para os testes
-  token = jwt.sign(
-    { id: "123", nome: "Teste" },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+beforeEach(async () => {
+  await limparBanco();
 });
 
 afterAll(async () => {
-  await Produto.deleteMany();
-  await mongoose.connection.close();
+  await fecharConexao();
 });
 
-describe("Testes de Produtos", () => {
-  it("Cria um produto", async () => {
+describe("Testes de Produtos (com DB real)", () => {
+  test("Cria um produto", async () => {
     const res = await request(app)
       .post("/api/produtos")
-      .set("Authorization", `Bearer ${token}`)
-      .send({ nome: "Coxinha", preco: 5.0 });
+      .send({ nome: "Teste", preco: 10 });
 
-    expect(res.statusCode).toBe(201);
+    expect(res.status).toBe(201);
+    expect(res.body.nome).toBe("Teste");
   });
 
-  it("Lista produtos", async () => {
+  test("Lista produtos", async () => {
+    await Produto.create({ nome: "A", preco: 20 });
+
     const res = await request(app).get("/api/produtos");
-    expect(res.statusCode).toBe(200);
+
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
   });
 
-  it("Atualiza produto", async () => {
-    const produto = await request(app)
-      .post("/api/produtos")
-      .set("Authorization", `Bearer ${token}`)
-      .send({ nome: "Pastel", preco: 6.0 });
+  test("Atualiza produto", async () => {
+    const produto = await Produto.create({ nome: "Velho", preco: 30 });
 
     const res = await request(app)
-      .put(`/api/produtos/${produto.body._id}`)
-      .set("Authorization", `Bearer ${token}`)
-      .send({ nome: "Pastel de carne", preco: 7.0 });
+      .put(`/api/produtos/${produto._id}`)
+      .send({ nome: "Novo", preco: 35 });
 
-    expect(res.statusCode).toBe(200);
+    expect(res.status).toBe(200);
+    expect(res.body.nome).toBe("Novo");
   });
 
-  it("Exclui produto", async () => {
-    const produto = await request(app)
-      .post("/api/produtos")
-      .set("Authorization", `Bearer ${token}`)
-      .send({ nome: "Esfirra", preco: 4.0 });
+  test("Deleta produto", async () => {
+    const produto = await Produto.create({ nome: "Lixo", preco: 1 });
 
-    const res = await request(app)
-      .delete(`/api/produtos/${produto.body._id}`)
-      .set("Authorization", `Bearer ${token}`);
+    const res = await request(app).delete(`/api/produtos/${produto._id}`);
 
-    expect(res.statusCode).toBe(204);
+    expect(res.status).toBe(204);
   });
+});
+afterAll(async () => {
+  await fecharConexao();
+  await new Promise(resolve => setTimeout(resolve, 300));
 });
