@@ -6,15 +6,13 @@ import {
   atualizarProduto,
   deletarProduto,
 } from "../controllers/produtoController.js";
-import { authMiddleware } from "../middlewares/auth.js";
 
 const router = express.Router();
-
 router.get("/", listarProdutos);
 router.get("/:id", buscarProduto);
+router.post("/", criarProduto);
+router.put("/:id", atualizarProduto);
+router.delete("/:id", deletarProduto);
 
-router.post("/", authMiddleware, criarProduto);
-router.put("/:id", authMiddleware, atualizarProduto);
-router.delete("/:id", authMiddleware, deletarProduto);
 
 export default router;
