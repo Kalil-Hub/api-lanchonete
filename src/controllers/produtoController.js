@@ -3,10 +3,11 @@ import Produto from "../models/produtoModel.js";
 // Criar produto
 export const criarProduto = async (req, res) => {
   try {
-    const { nome, preco } = req.body;
+    const existe = await Produto.findOne({ nome: req.body.nome });
+    if (existe) return res.status(409).json({ error: "Já existe um produto com esse nome" });
 
-    const novo = await Produto.create({ nome, preco });
-    return res.status(201).json(novo);
+    const produto = await Produto.create(req.body);
+    return res.status(201).json(produto);
 
   } catch (err) {
     return res.status(500).json({ erro: "Erro ao criar produto." });
@@ -27,6 +28,7 @@ export const listarProdutos = async (req, res) => {
 // Buscar por ID
 export const buscarProduto = async (req, res) => {
   try {
+    const produto = await Produto.findById(req.params.id);
     const { id } = req.params;
     const produto = await Produto.findById(id);
 
@@ -34,6 +36,7 @@ export const buscarProduto = async (req, res) => {
 
     return res.status(200).json(produto);
 
+  } catch {
   } catch (err) {
     return res.status(500).json({ erro: "Erro ao buscar produto." });
   }
@@ -42,6 +45,17 @@ export const buscarProduto = async (req, res) => {
 // Atualizar
 export const atualizarProduto = async (req, res) => {
   try {
+    const produto = await Produto.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!produto) return res.status(404).json({ erro: "Produto não encontrado." });
+
+    return res.status(200).json(produto);
+
+  } catch {
     const { id } = req.params;
     const { nome, preco } = req.body;
 
@@ -63,6 +77,13 @@ export const atualizarProduto = async (req, res) => {
 // Deletar
 export const deletarProduto = async (req, res) => {
   try {
+    const produto = await Produto.findByIdAndDelete(req.params.id);
+
+    if (!produto) return res.status(404).json({ erro: "Produto não encontrado." });
+
+    return res.status(204).send();
+
+  } catch {
     const { id } = req.params;
 
     const deletado = await Produto.findByIdAndDelete(id);
