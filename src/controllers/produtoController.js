@@ -3,9 +3,6 @@ import Produto from "../models/produtoModel.js";
 // Criar produto
 export const criarProduto = async (req, res) => {
   try {
-    const existe = await Produto.findOne({ nome: req.body.nome });
-    if (existe) return res.status(409).json({ error: "Já existe um produto com esse nome" });
-
     const produto = await Produto.create(req.body);
     return res.status(201).json(produto);
 

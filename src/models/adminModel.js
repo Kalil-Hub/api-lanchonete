@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 const adminSchema = new mongoose.Schema({
   nome: { type: String, required: true },
@@ -13,7 +13,7 @@ adminSchema.pre("save", async function (next) {
   next();
 });
 
-adminSchema.methods.compararSenha = function (senhaDigitada) {
+adminSchema.methods.compararSenha = async function (senhaDigitada) {
   return bcrypt.compare(senhaDigitada, this.senha);
 };
 
