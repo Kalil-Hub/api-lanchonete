@@ -1,0 +1,378 @@
+openapi: 3.0.0
+info:
+  title: API Lanchonete
+  version: 1.0.0
+  description: |
+    API RESTful para gerenciamento de lanchonete, incluindo autenticação de clientes e administradores,
+    cadastro de produtos, pedidos, clientes e controle de acesso via JWT.
+    Desenvolvido em Node.js + Express + MongoDB.
+
+servers:
+  - url: http://localhost:3000/api
+    description: Ambiente local
+
+tags:
+  - name: Autenticação - Administrador
+  - name: Autenticação - Cliente
+  - name: Produtos
+  - name: Clientes
+  - name: Pedidos
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    AdminLogin:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+          example: admin@gmail.com
+        senha:
+          type: string
+          example: 123456
+
+    ClienteLogin:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+          example: cliente@gmail.com
+        senha:
+          type: string
+          example: 123456
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI...
+
+    Produto:
+      type: object
+      required:
+        - nome
+        - preco
+      properties:
+        id:
+          type: string
+          example: 67af80fb99f21bb5d47398c2
+        nome:
+          type: string
+          example: X-Burguer
+        descricao:
+          type: string
+          example: Pão brioche, hambúrguer artesanal, queijo prato.
+        preco:
+          type: number
+          example: 19.90
+        imagem:
+          type: string
+          example: https://exemplo.com/xburguer.png
+
+    Cliente:
+      type: object
+      required:
+        - nome
+        - email
+        - senha
+      properties:
+        id:
+          type: string
+          example: 67af80fb99f21bb5d47398c2
+        nome:
+          type: string
+          example: João da Silva
+        email:
+          type: string
+          example: joao@gmail.com
+
+    PedidoItem:
+      type: object
+      required:
+        - produtoId
+        - quantidade
+      properties:
+        produtoId:
+          type: string
+          example: 67af80fb99f21bb5d47398c2
+        quantidade:
+          type: integer
+          example: 2
+
+    Pedido:
+      type: object
+      required:
+        - clienteId
+        - itens
+      properties:
+        id:
+          type: string
+          example: 67af80fb99f21bb5d47398c2
+        clienteId:
+          type: string
+          example: 67af80fb99f21bb5d47398c1
+        itens:
+          type: array
+          items:
+            $ref: "#/components/schemas/PedidoItem"
+        total:
+          type: number
+          example: 39.80
+        status:
+          type: string
+          example: "pendente"
+
+paths:
+
+  ################################
+  #   AUTENTICAÇÃO - ADMIN
+  ################################
+  /admin/login:
+    post:
+      tags: [Autenticação - Administrador]
+      summary: Login de administrador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLogin"
+      responses:
+        200:
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        401:
+          description: Credenciais inválidas
+
+  ################################
+  #   AUTENTICAÇÃO - CLIENTE
+  ################################
+  /cliente/login:
+    post:
+      tags: [Autenticação - Cliente]
+      summary: Login de cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteLogin"
+      responses:
+        200:
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        401:
+          description: Credenciais inválidas
+
+  ################################
+  #   PRODUTOS
+  ################################
+  /produtos:
+    get:
+      tags: [Produtos]
+      summary: Listar todos os produtos
+      responses:
+        200:
+          description: Lista de produtos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Produto"
+
+    post:
+      tags: [Produtos]
+      summary: Criar um novo produto (ADMIN)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Produto"
+      responses:
+        201:
+          description: Produto criado
+        401:
+          description: Token inválido
+        403:
+          description: Acesso negado
+
+  /produtos/{id}:
+    get:
+      tags: [Produtos]
+      summary: Buscar produto por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Produto encontrado
+        404:
+          description: Produto não encontrado
+
+    put:
+      tags: [Produtos]
+      summary: Atualizar produto (ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Produto"
+      responses:
+        200:
+          description: Produto atualizado
+        404:
+          description: Produto não encontrado
+
+    delete:
+      tags: [Produtos]
+      summary: Deletar produto (ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+      responses:
+        200:
+          description: Produto deletado
+        404:
+          description: Produto não encontrado
+
+  ################################
+  #   CLIENTES
+  ################################
+  /clientes:
+    get:
+      tags: [Clientes]
+      summary: Listar clientes (ADMIN)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de clientes
+
+    post:
+      tags: [Clientes]
+      summary: Criar cliente
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Cliente"
+      responses:
+        201:
+          description: Cliente criado
+
+  /clientes/{id}:
+    get:
+      tags: [Clientes]
+      summary: Buscar cliente por ID (ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+      responses:
+        200:
+          description: Cliente encontrado
+
+  ################################
+  #   PEDIDOS
+  ################################
+  /pedidos:
+    get:
+      tags: [Pedidos]
+      summary: Listar todos os pedidos (ADMIN)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de pedidos
+
+    post:
+      tags: [Pedidos]
+      summary: Criar pedido (CLIENTE)
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                itens:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/PedidoItem"
+      responses:
+        201:
+          description: Pedido criado
+
+  /pedidos/cliente:
+    get:
+      tags: [Pedidos]
+      summary: Listar pedidos do cliente logado
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de pedidos do cliente
+
+  /pedidos/{id}:
+    put:
+      tags: [Pedidos]
+      summary: Atualizar pedido (ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+      responses:
+        200:
+          description: Pedido atualizado
+
+    delete:
+      tags: [Pedidos]
+      summary: Deletar pedido (ADMIN)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+      responses:
+        200:
+          description: Pedido deletado
