@@ -10,6 +10,7 @@ app.use("/api/auth/cliente", clienteAuthRoutes);
 app.use("/api/auth/admin", adminAuthRoutes);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 app.use("/api/v1/auth/cliente", clienteAuthRoutes);
 app.use("/api/v1/auth/admin", adminAuthRoutes);
@@ -34,6 +35,11 @@ app.use("/api/pedidos", pedidoRoutes);
 
 app.use("/api/produtos", produtoRoutes);
 app.use("/api/clientes", clienteRoutes);
+=======
+app.use("/produtos", produtoRoutes);
+app.use("/clientes", clienteRoutes);
+app.use("/pedidos", pedidoRoutes);
+>>>>>>> Stashed changes
 =======
 app.use("/produtos", produtoRoutes);
 app.use("/clientes", clienteRoutes);
