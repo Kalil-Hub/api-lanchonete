@@ -8,21 +8,11 @@ export const criarPedido = async (req, res) => {
     const clienteId = req.userId;
 
     const cliente = await Cliente.findById(clienteId);
-    if (!cliente) {
-      return res.status(404).json({ error: "Cliente não encontrado" });
-    }
-
-export const criarPedido = async (req, res, next) => {
-  try {
-    const { cliente, itens } = req.body;
+    if (!cliente) return res.status(404).json({ error: "Cliente não encontrado" });
 
     let total = 0;
 
     for (const item of itens) {
-      const produto = await Produto.findById(item.produtoId);
-      if (!produto) {
-        return res.status(404).json({ error: `Produto não encontrado: ${item.produtoId}` });
-      }
       const produto = await Produto.findById(item.produto);
       if (!produto) continue;
       total += produto.preco * item.quantidade;
@@ -30,14 +20,13 @@ export const criarPedido = async (req, res, next) => {
 
     const pedido = await Pedido.create({
       clienteId,
-      cliente,
       itens,
       total
     });
 
     res.status(201).json(pedido);
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao criar pedido" });
+  } catch {
+    res.status(500).json({ error: "Erro ao criar pedido" });
   }
 };
 
@@ -45,10 +34,10 @@ export const listarPedidos = async (req, res) => {
   try {
     const pedidos = await Pedido.find()
       .populate("clienteId", "nome email")
-      .populate("itens.produtoId", "nome preco");
+      .populate("itens.produto", "nome preco");
 
     res.json(pedidos);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: "Erro ao listar pedidos" });
   }
 };
@@ -56,67 +45,22 @@ export const listarPedidos = async (req, res) => {
 export const listarPedidosCliente = async (req, res) => {
   try {
     const pedidos = await Pedido.find({ clienteId: req.userId })
-      .populate("itens.produtoId", "nome preco");
+      .populate("itens.produto", "nome preco");
 
     res.json(pedidos);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: "Erro ao buscar pedidos do cliente" });
   }
 };
 
 export const atualizarPedido = async (req, res) => {
   try {
-    const pedido = await Pedido.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-
-    if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
-
-    res.json(pedido);
-  } catch {
-    res.status(500).json({ error: "Erro ao atualizar pedido" });
-  }
-};
-
-export const deletarPedido = async (req, res) => {
-  try {
-    const pedido = await Pedido.findByIdAndDelete(req.params.id);
-
-    if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
-
-    res.json({ message: "Pedido deletado com sucesso" });
-  } catch {
-    res.status(500).json({ error: "Erro ao deletar pedido" });
-
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const listarPedidos = async (req, res, next) => {
-  try {
-    const pedidos = await Pedido
-      .find()
-      .populate("cliente")
-      .populate("itens.produto");
-
-    res.status(200).json(pedidos);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const atualizarPedido = async (req, res, next) => {
-  try {
     const { itens, status } = req.body;
 
-    let updateData = {};
+    const updateData = {};
+    let total = 0;
 
     if (itens) {
-      let total = 0;
-
       for (const item of itens) {
         const produto = await Produto.findById(item.produto);
         if (!produto) continue;
@@ -135,18 +79,21 @@ export const atualizarPedido = async (req, res, next) => {
       { new: true }
     );
 
-    res.status(200).json(pedido);
+    if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
 
-  } catch (error) {
-    next(error);
+    res.json(pedido);
+  } catch {
+    res.status(500).json({ error: "Erro ao atualizar pedido" });
   }
 };
 
-export const deletarPedido = async (req, res, next) => {
+export const deletarPedido = async (req, res) => {
   try {
-    await Pedido.findByIdAndDelete(req.params.id);
-    res.status(204).end();
-  } catch (error) {
-    next(error);
+    const pedido = await Pedido.findByIdAndDelete(req.params.id);
+    if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
+
+    res.json({ message: "Pedido deletado com sucesso" });
+  } catch {
+    res.status(500).json({ error: "Erro ao deletar pedido" });
   }
 };

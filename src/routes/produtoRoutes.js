@@ -1,17 +1,20 @@
-import { Router } from "express";
+import express from "express";
 import {
   criarProduto,
   listarProdutos,
-  buscarProduto,
   atualizarProduto,
-  deletarProduto
+  deletarProduto,
+  buscarProduto
 } from "../controllers/produtoController.js";
 
 import { authAdmin } from "../middlewares/authAdmin.js";
 
-const router = Router();
+import { validar } from "../validators/validar.js";
+
+const router = express.Router();
 
 router.get("/", listarProdutos);
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 router.get("/:id", buscarProdutoValidator, validar, buscarProduto);
 router.post("/", authAdmin, criarProdutoValidator, validar, criarProduto);
@@ -30,5 +33,12 @@ router.post("/", authAdmin, criarProduto);
 router.put("/:id", authAdmin, atualizarProduto);
 router.delete("/:id", authAdmin, deletarProduto);
 >>>>>>> parent of a549546 (Realiznaod totalmente a autenticação e melhorando a segurança)
+=======
+router.get("/:id", buscarProduto);
+
+router.post("/", authAdmin, criarProdutoValidator, validar, criarProduto);
+router.put("/:id", authAdmin, atualizarProdutoValidator, validar, atualizarProduto);
+router.delete("/:id", authAdmin, deletarProdutoValidator, validar, deletarProduto);
+>>>>>>> Stashed changes
 
 export default router;

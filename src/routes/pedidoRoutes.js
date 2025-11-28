@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express from "express";
 import {
   criarPedido,
   listarPedidos,
@@ -9,17 +9,11 @@ import {
 import { authCliente } from "../middlewares/authCliente.js";
 import { authAdmin } from "../middlewares/authAdmin.js";
 
-const router = Router();
+const router = express.Router();
 
 router.post("/", authCliente, criarPedido);
 router.get("/", authAdmin, listarPedidos);
 router.put("/:id", authAdmin, atualizarPedido);
 router.delete("/:id", authAdmin, deletarPedido);
-const router = Router();
-
-router.post("/", criarPedido);
-router.get("/", listarPedidos);
-router.put("/:id", atualizarPedido);
-router.delete("/:id", deletarPedido);
 
 export default router;
