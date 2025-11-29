@@ -1,42 +1,22 @@
 import Cliente from "../models/clienteModel.js";
 
-export const criarCliente = async (req, res, next) => {
+export const criarCliente = async (req, res) => {
   try {
-    const cliente = await Cliente.create(req.body);
-    res.status(201).json(cliente);
-  } catch (error) {
-    next(error);
+    const { nome, email, senha, telefone } = req.body;
+    const existe = await Cliente.findOne({ email });
+    if (existe) return res.status(409).json({ error: "Email já cadastrado" });
+    const cliente = await Cliente.create({ nome, email, senha, telefone });
+    res.status(201).json({ id: cliente._id, nome: cliente.nome, email: cliente.email });
+  } catch {
+    res.status(500).json({ error: "Erro ao criar cliente" });
   }
 };
 
-export const listarClientes = async (req, res, next) => {
+export const listarClientes = async (req, res) => {
   try {
-    const clientes = await Cliente.find();
-    res.status(200).json(clientes);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const atualizarCliente = async (req, res, next) => {
-  try {
-    const cliente = await Cliente.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-
-    res.status(200).json(cliente);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deletarCliente = async (req, res, next) => {
-  try {
-    await Cliente.findByIdAndDelete(req.params.id);
-    res.status(204).end();
-  } catch (error) {
-    next(error);
+    const clientes = await Cliente.find().select("-senha");
+    res.json(clientes);
+  } catch {
+    res.status(500).json({ error: "Erro ao listar clientes" });
   }
 };

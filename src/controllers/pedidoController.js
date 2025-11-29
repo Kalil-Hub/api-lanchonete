@@ -5,27 +5,37 @@ import Cliente from "../models/clienteModel.js";
 export const criarPedido = async (req, res) => {
   try {
     const { itens } = req.body;
-    const clienteId = req.userId;
+    const clienteId = req.userId || req.body.cliente; // cliente vindo do token ou body (tests)
+
+    if (!itens || !Array.isArray(itens) || itens.length === 0) {
+      return res.status(400).json({ error: "Itens do pedido inválidos" });
+    }
 
     const cliente = await Cliente.findById(clienteId);
     if (!cliente) return res.status(404).json({ error: "Cliente não encontrado" });
 
     let total = 0;
+    const itensProcessados = [];
 
     for (const item of itens) {
-      const produto = await Produto.findById(item.produto);
-      if (!produto) continue;
-      total += produto.preco * item.quantidade;
+      const produtoId = item.produto || item.produtoId;
+      const produto = await Produto.findById(produtoId);
+      if (!produto) return res.status(404).json({ error: `Produto não encontrado: ${produtoId}` });
+
+      const quantidade = Number(item.quantidade) || 1;
+      total += produto.preco * quantidade;
+      itensProcessados.push({ produto: produto._id, quantidade });
     }
 
     const pedido = await Pedido.create({
-      clienteId,
-      itens,
+      cliente: cliente._id,
+      itens: itensProcessados,
       total
     });
 
     res.status(201).json(pedido);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao criar pedido" });
   }
 };
@@ -33,9 +43,8 @@ export const criarPedido = async (req, res) => {
 export const listarPedidos = async (req, res) => {
   try {
     const pedidos = await Pedido.find()
-      .populate("clienteId", "nome email")
+      .populate("cliente", "nome email")
       .populate("itens.produto", "nome preco");
-
     res.json(pedidos);
   } catch {
     res.status(500).json({ error: "Erro ao listar pedidos" });
@@ -44,43 +53,38 @@ export const listarPedidos = async (req, res) => {
 
 export const listarPedidosCliente = async (req, res) => {
   try {
-    const pedidos = await Pedido.find({ clienteId: req.userId })
+    const pedidos = await Pedido.find({ cliente: req.userId })
       .populate("itens.produto", "nome preco");
-
     res.json(pedidos);
   } catch {
-    res.status(500).json({ error: "Erro ao buscar pedidos do cliente" });
+    res.status(500).json({ error: "Erro ao listar pedidos do cliente" });
   }
 };
 
 export const atualizarPedido = async (req, res) => {
   try {
     const { itens, status } = req.body;
-
-    const updateData = {};
-    let total = 0;
+    const update = {};
 
     if (itens) {
+      let total = 0;
+      const itensProcessados = [];
       for (const item of itens) {
-        const produto = await Produto.findById(item.produto);
-        if (!produto) continue;
-        total += produto.preco * item.quantidade;
+        const produtoId = item.produto || item.produtoId;
+        const produto = await Produto.findById(produtoId);
+        if (!produto) return res.status(404).json({ error: `Produto não encontrado: ${produtoId}` });
+        const quantidade = Number(item.quantidade) || 1;
+        total += produto.preco * quantidade;
+        itensProcessados.push({ produto: produto._id, quantidade });
       }
-
-      updateData.itens = itens;
-      updateData.total = total;
+      update.itens = itensProcessados;
+      update.total = total;
     }
 
-    if (status) updateData.status = status;
+    if (status) update.status = status;
 
-    const pedido = await Pedido.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
-
+    const pedido = await Pedido.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
-
     res.json(pedido);
   } catch {
     res.status(500).json({ error: "Erro ao atualizar pedido" });
@@ -91,7 +95,6 @@ export const deletarPedido = async (req, res) => {
   try {
     const pedido = await Pedido.findByIdAndDelete(req.params.id);
     if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
-
     res.json({ message: "Pedido deletado com sucesso" });
   } catch {
     res.status(500).json({ error: "Erro ao deletar pedido" });
