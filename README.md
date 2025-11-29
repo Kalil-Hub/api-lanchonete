@@ -109,12 +109,6 @@ npm test
 ```
 
 ------------------------------------------------------------------------
-
-## Problemas que não consegui resolver
-
-- Develop ficou com problema
-
-- Leve em consideração a Master
 desenvolvimento de um sistema completo de lanchonete integrado a um
 aplicativo mobile.
 
