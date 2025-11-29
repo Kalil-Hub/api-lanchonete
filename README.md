@@ -110,11 +110,11 @@ npm test
 
 ------------------------------------------------------------------------
 
-## Objetivo do Projeto
+## Problemas que não consegui resolver
 
-Este projeto foi criado com o intuito de **estudo**, **prática de API
-RESTful**, **organização arquitetural**, e **implementação de
-autenticação real com JWT**, além de servir como base para o
+- Develop ficou com problema
+
+- Leve em consideração a Master
 desenvolvimento de um sistema completo de lanchonete integrado a um
 aplicativo mobile.
 
