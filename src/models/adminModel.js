@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const adminSchema = new mongoose.Schema({
   nome: { type: String, required: true },
-  email: { type: String, unique: true, required: true },
+  email: { type: String, required: true, unique: true },
   senha: { type: String, required: true }
 }, { timestamps: true });
 
@@ -13,7 +13,7 @@ adminSchema.pre("save", async function (next) {
   next();
 });
 
-adminSchema.methods.compararSenha = async function (senhaDigitada) {
+adminSchema.methods.compararSenha = function (senhaDigitada) {
   return bcrypt.compare(senhaDigitada, this.senha);
 };
 

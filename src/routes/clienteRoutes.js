@@ -1,16 +1,12 @@
-import { Router } from "express";
-import {
-  criarCliente,
-  listarClientes,
-  atualizarCliente,
-  deletarCliente
-} from "../controllers/clienteController.js";
+import express from "express";
+import { criarCliente, listarClientes } from "../controllers/clienteController.js";
+import authAdmin from "../middlewares/authAdmin.js";
+import { validarRegistroCliente } from "../validators/clienteValidator.js";
+import { validarCampos } from "../middlewares/validarCampos.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", criarCliente);
-router.get("/", listarClientes);
-router.put("/:id", atualizarCliente);
-router.delete("/:id", deletarCliente);
+router.post("/", validarRegistroCliente, validarCampos, criarCliente);
+router.get("/", authAdmin, listarClientes);
 
 export default router;

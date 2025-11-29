@@ -1,20 +1,17 @@
 import jwt from "jsonwebtoken";
 
-export const authAdmin = (req, res, next) => {
-  const header = req.headers.authorization;
+export default (req, res, next) => {
+  const header = req.headers.authorization || req.headers.Authorization;
   if (!header) return res.status(401).json({ error: "Token ausente" });
 
-  const [bearer, token] = header.split(" ");
-  if (bearer !== "Bearer") return res.status(401).json({ error: "Token inválido" });
+  const parts = header.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") return res.status(401).json({ error: "Formato de token inválido" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (decoded.role !== "admin") {
-      return res.status(403).json({ error: "Acesso negado" });
-    }
-
+    const decoded = jwt.verify(parts[1], process.env.JWT_SECRET);
+    if (decoded.role !== "admin") return res.status(403).json({ error: "Acesso negado" });
     req.userId = decoded.id;
+    req.userRole = decoded.role;
     next();
   } catch {
     return res.status(401).json({ error: "Token inválido ou expirado" });
